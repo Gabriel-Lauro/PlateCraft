@@ -36,6 +36,9 @@ ENV/
 env/
 .venv
 
+# Backend Python (descontinuado - usar backendNode)
+backend/
+
 # Banco de dados
 *.db
 *.sqlite

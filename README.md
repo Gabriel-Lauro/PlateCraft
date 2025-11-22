@@ -52,27 +52,34 @@ frontend/
 └── package.json
 ```
 
-### Backend (Flask + Python)
-- **Framework**: Flask 3.0.0
-- **Linguagem**: Python
+### Backend (Express + Node.js) ⭐ NOVO
+- **Framework**: Express 4.18.2
+- **Linguagem**: JavaScript (Node.js)
 - **Banco de Dados**: SQLite
-- **Autenticação**: JWT + bcrypt
+- **Autenticação**: JWT + bcryptjs
 - **CORS**: Habilitado para requisições do frontend
 
 **Estrutura de Pastas:**
 ```
-backend/
-├── database/
-│   └── db_setup.py        # Inicialização do banco
-├── routes/
-│   ├── auth_routes.py     # Autenticação (login, registro)
-│   └── receitas_routes.py # Operações com receitas
-├── utils/
-│   ├── receitas_utils.py  # Lógica de busca
-│   └── responses.py       # Formatação de respostas
-├── main.py                # Aplicação principal
-└── requirements.txt       # Dependências
+backendNode/
+├── src/
+│   ├── database/
+│   │   └── dbSetup.js         # Inicialização do banco
+│   ├── middleware/
+│   │   └── authMiddleware.js  # Autenticação JWT
+│   ├── routes/
+│   │   ├── authRoutes.js      # Autenticação (login, registro)
+│   │   └── receitasRoutes.js  # Operações com receitas
+│   ├── utils/
+│   │   ├── receitasUtils.js   # Lógica de busca
+│   │   └── responses.js       # Formatação de respostas
+│   └── main.js                # Aplicação principal
+├── .env.example               # Exemplo de variáveis de ambiente
+├── package.json               # Dependências
+└── README.md                  # Documentação do backend
 ```
+
+> **Nota**: O backend Python (Flask) foi descontinuado. Use o `backendNode` para novas implementações.
 
 ---
 
@@ -395,31 +402,44 @@ Resposta (201):
 
 ### Pré-requisitos
 - Node.js 16+
-- Python 3.8+
 - npm ou yarn
 
-### Backend
+### Backend Node.js (Recomendado) ⭐
 
 1. **Instalar dependências**
 ```bash
-cd backend
-pip install -r requirements.txt
+cd backendNode
+npm install
 ```
 
 2. **Configurar variáveis de ambiente**
-Criar arquivo `.env` na pasta `backend`:
+Copiar arquivo `.env.example` para `.env`:
+```bash
+cp .env.example .env
 ```
-FLASK_DEBUG=True
+
+Editar `.env` com suas configurações:
+```
 HOST=0.0.0.0
 PORT=5000
+NODE_ENV=development
+DB_PATH=receitas_tudogostoso.db
 SECRET_KEY=sua-chave-secreta-aqui
 JWT_SECRET_KEY=sua-chave-jwt-aqui
 TOKEN_EXPIRATION_DAYS=30
+CORS_ORIGIN=*
 ```
 
 3. **Executar servidor**
+
+Modo desenvolvimento (com auto-reload):
 ```bash
-python main.py
+npm run dev
+```
+
+Modo produção:
+```bash
+npm start
 ```
 
 O servidor estará disponível em `http://localhost:5000`
@@ -428,12 +448,12 @@ O servidor estará disponível em `http://localhost:5000`
 
 1. **Instalar dependências**
 ```bash
-cd frontend
+cd app
 npm install
 ```
 
 2. **Configurar URL da API**
-Editar `frontend/src/config/api.js`:
+Editar `app/src/config/api.js`:
 ```javascript
 const API_URL = 'http://seu-ip-local:5000';
 ```
@@ -455,6 +475,23 @@ Para iOS:
 npm run ios
 ```
 
+### Backend Python (Descontinuado)
+
+> ⚠️ O backend Python foi descontinuado. Use o `backendNode` para novas implementações.
+
+Se precisar executar a versão antiga:
+
+1. **Instalar dependências**
+```bash
+cd backend
+pip install -r requirements.txt
+```
+
+2. **Executar servidor**
+```bash
+python main.py
+```
+
 ---
 
 ## 🎨 Tecnologias Utilizadas
@@ -467,10 +504,18 @@ npm run ios
 - **Axios** - Cliente HTTP
 - **Styled Components** - Estilização
 
-### Backend
+### Backend (Node.js) ⭐
+- **Express** - Framework web
+- **SQLite3** - Banco de dados
+- **jsonwebtoken** - Autenticação JWT
+- **bcryptjs** - Criptografia de senha
+- **cors** - Suporte a CORS
+- **dotenv** - Variáveis de ambiente
+
+### Backend (Python - Descontinuado)
 - **Flask** - Framework web
 - **SQLite** - Banco de dados
-- **JWT** - Autenticação
+- **PyJWT** - Autentica��ão
 - **bcrypt** - Criptografia de senha
 - **Flask-CORS** - Suporte a CORS
 
