@@ -1,0 +1,155 @@
+import { StyleSheet } from 'react-native';
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+  },
+  shimmerOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  shimmerGradient: {
+    flex: 1,
+  },
+  imagemContainer: {
+    width: '100%',
+    height: 320,
+    backgroundColor: '#E8E8E8',
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  imagem: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#E8E8E8',
+  },
+  tituloContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 20,
+    backgroundColor: '#FFFFFF',
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  tituloLine: {
+    height: 32,
+    backgroundColor: '#E8E8E8',
+    borderRadius: 8,
+    marginBottom: 8,
+  },
+  infoContainer: {
+    flexDirection: 'row',
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    backgroundColor: '#FFF5EB',
+    justifyContent: 'space-around',
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  infoItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    position: 'relative',
+  },
+  infoIcon: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: '#E8E8E8',
+    marginRight: 8,
+  },
+  infoTexto: {
+    flex: 1,
+  },
+  infoLabel: {
+    height: 10,
+    backgroundColor: '#E8E8E8',
+    borderRadius: 4,
+    marginBottom: 4,
+    width: '70%',
+  },
+  infoValor: {
+    height: 14,
+    backgroundColor: '#E8E8E8',
+    borderRadius: 4,
+    width: '80%',
+  },
+  autorContainer: {
+    flexDirection: 'row',
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0E6D8',
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  autorIcon: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#E8E8E8',
+    marginRight: 12,
+  },
+  autorTexto: {
+    flex: 1,
+  },
+  autorLabel: {
+    height: 10,
+    backgroundColor: '#E8E8E8',
+    borderRadius: 4,
+    marginBottom: 4,
+    width: '40%',
+  },
+  autorNome: {
+    height: 14,
+    backgroundColor: '#E8E8E8',
+    borderRadius: 4,
+    width: '60%',
+  },
+  secaoContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 20,
+    marginVertical: 8,
+    marginHorizontal: 8,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  secaoTitulo: {
+    height: 18,
+    backgroundColor: '#E8E8E8',
+    borderRadius: 4,
+    marginBottom: 14,
+    width: '40%',
+  },
+  linhaTexto: {
+    height: 12,
+    backgroundColor: '#E8E8E8',
+    borderRadius: 4,
+    marginBottom: 10,
+    width: '100%',
+  },
+  linhaTextoMenor: {
+    width: '70%',
+  },
+  ingredienteItem: {
+    height: 40,
+    backgroundColor: '#FFF9F5',
+    borderRadius: 8,
+    marginBottom: 12,
+  },
+  passoItem: {
+    height: 50,
+    backgroundColor: '#FFF9F5',
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+});
+
+export default styles;

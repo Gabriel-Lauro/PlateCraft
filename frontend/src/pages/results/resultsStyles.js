@@ -1,0 +1,178 @@
+import { StyleSheet } from 'react-native';
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#FFF8F0',
+  },
+  gradient: {
+    flex: 1,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingTop: 38,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0E6D8',
+    backgroundColor: '#FFFFFF',
+  },
+  backButton: {
+    width: 44,
+    height: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 12,
+    backgroundColor: '#FFF5EB',
+  },
+  headerTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#2C2C2C',
+    letterSpacing: 0.5,
+    marginLeft: 12,
+  },
+  ingredientesContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    backgroundColor: '#FFFBF7',
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0E6D8',
+  },
+  ingredientesLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#CD7F32',
+    marginBottom: 6,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  ingredientesText: {
+    fontSize: 14,
+    color: '#2C2C2C',
+    fontWeight: '500',
+    lineHeight: 20,
+  },
+  listContent: {
+    paddingHorizontal: 12,
+    paddingVertical: 16,
+    paddingBottom: 24,
+  },
+  columnWrapper: {
+    justifyContent: 'space-between',
+    paddingHorizontal: 4,
+    marginBottom: 16,
+  },
+  cardWrapper: {
+    flex: 1,
+    marginHorizontal: 4,
+  },
+  card: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    overflow: 'hidden',
+    shadowColor: '#CD7F32',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  cardImage: {
+    width: '100%',
+    height: 160,
+    backgroundColor: '#F5F5F5',
+    position: 'relative',
+  },
+  favoritoButton: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  image: {
+    width: '100%',
+    height: '100%',
+  },
+  imagePlaceholder: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F0E6D8',
+  },
+  cardContent: {
+    padding: 14,
+  },
+  receitaNome: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#2C2C2C',
+    marginBottom: 8,
+    lineHeight: 20,
+  },
+  receitaTempo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  receitaTempoText: {
+    fontSize: 13,
+    color: '#666666',
+    marginBottom: 0,
+    fontWeight: '500',
+    marginLeft: 6,
+  },
+  receitaInfo: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  receitaNotaContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  receitaNota: {
+    fontSize: 13,
+    color: '#CD7F32',
+    fontWeight: '700',
+    marginLeft: 4,
+  },
+  receitaAvaliacoes: {
+    fontSize: 12,
+    color: '#999999',
+    fontWeight: '500',
+  },
+  footerLoader: {
+    paddingVertical: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#666666',
+    textAlign: 'center',
+    marginTop: 12,
+    lineHeight: 24,
+  },
+  skeletonContainer: {
+    paddingHorizontal: 12,
+    paddingVertical: 16,
+  },
+});
+
+export default styles;
