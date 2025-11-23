@@ -3,13 +3,8 @@ name: Build APK
 on:
   push:
     branches: [ main, develop ]
-    paths:
-      - 'app/**'
-      - '.github/workflows/build-frontend.yml'
   pull_request:
     branches: [ main, develop ]
-    paths:
-      - 'app/**'
 
 jobs:
   build-apk:
@@ -54,19 +49,11 @@ jobs:
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
 
-      - name: Download APK
-        working-directory: ./app
-        run: |
-          BUILD_ID=$(npx eas-cli build:list --platform android --limit 1 --json | jq -r '.[0].id')
-          npx eas-cli build:download --id $BUILD_ID --path ./app.apk
-        env:
-          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: platecraft-apk
-          path: app/app.apk
+          path: app/build/
           retention-days: 30
 
       - name: Create Release
