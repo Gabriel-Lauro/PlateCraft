@@ -43,6 +43,7 @@ backend/
 *.db
 *.sqlite
 *.sqlite3
+!backendNode/recipes.db
 receitas_tudogostoso.db
 
 # IDEs e Editores

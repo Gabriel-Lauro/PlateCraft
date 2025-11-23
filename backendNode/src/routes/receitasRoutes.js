@@ -1,5 +1,5 @@
 const express = require('express');
-const { getDb, runQuery, getQuery, allQuery } = require('../database/dbSetup');
+const { getUsersDb, getRecipesDb, runQuery, getQuery, allQuery } = require('../database/dbSetup');
 const { jsonResponse } = require('../utils/responses');
 const { buscarReceitas } = require('../utils/receitasUtils');
 const { tokenRequired } = require('../middleware/authMiddleware');
@@ -30,7 +30,7 @@ router.get('/receitas', async (req, res) => {
     const pagina = Math.max(1, parseInt(req.query.pagina) || 1);
     const offset = (pagina - 1) * 10;
 
-    const db = await getDb();
+    const db = await getRecipesDb();
     const resultados = await buscarReceitas(db, ingredientes);
     db.close();
 
@@ -53,12 +53,95 @@ router.get('/receitas', async (req, res) => {
 });
 
 /**
+ * GET /receitas/favoritos
+ * Lista todas as receitas favoritas do usuário com paginação
+ */
+router.get('/receitas/favoritos', tokenRequired, async (req, res) => {
+  try {
+    const userId = req.userId;
+    const pagina = Math.max(1, parseInt(req.query.pagina) || 1);
+    const offset = (pagina - 1) * 10;
+
+    const usersDb = await getUsersDb();
+
+    // Conta total de favoritos
+    const totalResult = await getQuery(
+      usersDb,
+      'SELECT COUNT(*) as total FROM favoritos WHERE user_id = ?',
+      [userId]
+    );
+
+    const total = totalResult.total || 0;
+
+    // Busca favoritos com paginação (apenas ids)
+    const favoritosRows = await allQuery(
+      usersDb,
+      `SELECT recipe_id, data_favoritado
+       FROM favoritos
+       WHERE user_id = ?
+       ORDER BY data_favoritado DESC
+       LIMIT 10 OFFSET ?`,
+      [userId, offset]
+    );
+
+    usersDb.close();
+
+    let receitas = [];
+
+    if (favoritosRows.length > 0) {
+      const ids = favoritosRows.map(f => f.recipe_id);
+      const placeholders = ids.map(() => '?').join(',');
+      const recipesDb = await getRecipesDb();
+      const rows = await allQuery(
+        recipesDb,
+        `SELECT id, titulo, nota, avaliacoes, autor, tempo_preparo, link, imagem
+         FROM recipes
+         WHERE id IN (${placeholders})`,
+        ids
+      );
+      recipesDb.close();
+
+      const byId = new Map(rows.map(r => [r.id, r]));
+      receitas = favoritosRows
+        .map(f => {
+          const r = byId.get(f.recipe_id);
+          if (!r) return null;
+          return {
+            id: r.id,
+            titulo: r.titulo,
+            nota: r.nota,
+            avaliacoes: r.avaliacoes,
+            autor: r.autor,
+            tempo_preparo: r.tempo_preparo,
+            link: r.link,
+            imagem: r.imagem,
+            data_favoritado: f.data_favoritado
+          };
+        })
+        .filter(Boolean);
+    }
+
+    return jsonResponse(res, {
+      sucesso: true,
+      pagina: pagina,
+      total: total,
+      mostrando: receitas.length,
+      tem_mais: (offset + 10) < total,
+      receitas: receitas
+    });
+  } catch (error) {
+    console.error('Erro ao buscar favoritos:', error);
+    return jsonResponse(res, { erro: 'Erro ao buscar favoritos' }, 500);
+  }
+});
+
+/**
  * GET /receitas/surpresa
  * Sorteia uma receita aleatória do banco de dados
  */
 router.get('/receitas/surpresa', async (req, res) => {
   try {
-    const db = await getDb();
+    const db = await getRecipesDb();
 
     // Conta total de receitas
     const totalResult = await getQuery(
@@ -122,63 +205,13 @@ router.get('/receitas/surpresa', async (req, res) => {
 });
 
 /**
- * GET /receitas/favoritos
- * Lista todas as receitas favoritas do usuário com paginação
- */
-router.get('/receitas/favoritos', tokenRequired, async (req, res) => {
-  try {
-    const userId = req.userId;
-    const pagina = Math.max(1, parseInt(req.query.pagina) || 1);
-    const offset = (pagina - 1) * 10;
-
-    const db = await getDb();
-
-    // Conta total de favoritos
-    const totalResult = await getQuery(
-      db,
-      'SELECT COUNT(*) as total FROM favoritos WHERE user_id = ?',
-      [userId]
-    );
-
-    const total = totalResult.total || 0;
-
-    // Busca favoritos com paginação
-    const favoritos = await allQuery(
-      db,
-      `SELECT r.id, r.titulo, r.nota, r.avaliacoes, r.autor,
-              r.tempo_preparo, r.link, r.imagem, f.data_favoritado
-       FROM favoritos f
-       JOIN recipes r ON r.id = f.recipe_id
-       WHERE f.user_id = ?
-       ORDER BY f.data_favoritado DESC
-       LIMIT 10 OFFSET ?`,
-      [userId, offset]
-    );
-
-    db.close();
-
-    return jsonResponse(res, {
-      sucesso: true,
-      pagina: pagina,
-      total: total,
-      mostrando: favoritos.length,
-      tem_mais: (offset + 10) < total,
-      receitas: favoritos
-    });
-  } catch (error) {
-    console.error('Erro ao buscar favoritos:', error);
-    return jsonResponse(res, { erro: 'Erro ao buscar favoritos' }, 500);
-  }
-});
-
-/**
  * GET /receitas/:id
  * Retorna os detalhes de uma receita
  */
 router.get('/receitas/:id', async (req, res) => {
   try {
     const recipeId = parseInt(req.params.id);
-    const db = await getDb();
+    const db = await getRecipesDb();
 
     // Busca os dados principais da receita
     const receita = await getQuery(
@@ -233,23 +266,26 @@ router.post('/receitas/:id/favoritar', tokenRequired, async (req, res) => {
   try {
     const userId = req.userId;
     const recipeId = parseInt(req.params.id);
-    const db = await getDb();
 
-    // Verifica se a receita existe
+    // Verifica se a receita existe no recipes.db
+    const recipesDb = await getRecipesDb();
     const receita = await getQuery(
-      db,
+      recipesDb,
       'SELECT id FROM recipes WHERE id = ?',
       [recipeId]
     );
+    recipesDb.close();
 
     if (!receita) {
-      db.close();
       return jsonResponse(res, { erro: 'Receita não encontrada' }, 404);
     }
 
+    // Opera no users.db
+    const usersDb = await getUsersDb();
+
     // Verifica se já está favoritada
     const favorito = await getQuery(
-      db,
+      usersDb,
       'SELECT id FROM favoritos WHERE user_id = ? AND recipe_id = ?',
       [userId, recipeId]
     );
@@ -257,12 +293,12 @@ router.post('/receitas/:id/favoritar', tokenRequired, async (req, res) => {
     if (favorito) {
       // Remove dos favoritos
       await runQuery(
-        db,
+        usersDb,
         'DELETE FROM favoritos WHERE user_id = ? AND recipe_id = ?',
         [userId, recipeId]
       );
 
-      db.close();
+      usersDb.close();
       return jsonResponse(res, {
         sucesso: true,
         mensagem: 'Receita removida dos favoritos',
@@ -271,12 +307,12 @@ router.post('/receitas/:id/favoritar', tokenRequired, async (req, res) => {
     } else {
       // Adiciona aos favoritos
       await runQuery(
-        db,
+        usersDb,
         'INSERT INTO favoritos (user_id, recipe_id) VALUES (?, ?)',
         [userId, recipeId]
       );
 
-      db.close();
+      usersDb.close();
       return jsonResponse(res, {
         sucesso: true,
         mensagem: 'Receita adicionada aos favoritos',
@@ -299,39 +335,72 @@ router.get('/receitas/favoritos', tokenRequired, async (req, res) => {
     const pagina = Math.max(1, parseInt(req.query.pagina) || 1);
     const offset = (pagina - 1) * 10;
 
-    const db = await getDb();
+    const usersDb = await getUsersDb();
 
     // Conta total de favoritos
     const totalResult = await getQuery(
-      db,
+      usersDb,
       'SELECT COUNT(*) as total FROM favoritos WHERE user_id = ?',
       [userId]
     );
 
     const total = totalResult.total || 0;
 
-    // Busca favoritos com paginação
-    const favoritos = await allQuery(
-      db,
-      `SELECT r.id, r.titulo, r.nota, r.avaliacoes, r.autor,
-              r.tempo_preparo, r.link, r.imagem, f.data_favoritado
-       FROM favoritos f
-       JOIN recipes r ON r.id = f.recipe_id
-       WHERE f.user_id = ?
-       ORDER BY f.data_favoritado DESC
+    // Busca favoritos com paginação (apenas ids)
+    const favoritosRows = await allQuery(
+      usersDb,
+      `SELECT recipe_id, data_favoritado
+       FROM favoritos
+       WHERE user_id = ?
+       ORDER BY data_favoritado DESC
        LIMIT 10 OFFSET ?`,
       [userId, offset]
     );
 
-    db.close();
+    usersDb.close();
+
+    let receitas = [];
+
+    if (favoritosRows.length > 0) {
+      const ids = favoritosRows.map(f => f.recipe_id);
+      const placeholders = ids.map(() => '?').join(',');
+      const recipesDb = await getRecipesDb();
+      const rows = await allQuery(
+        recipesDb,
+        `SELECT id, titulo, nota, avaliacoes, autor, tempo_preparo, link, imagem
+         FROM recipes
+         WHERE id IN (${placeholders})`,
+        ids
+      );
+      recipesDb.close();
+
+      const byId = new Map(rows.map(r => [r.id, r]));
+      receitas = favoritosRows
+        .map(f => {
+          const r = byId.get(f.recipe_id);
+          if (!r) return null;
+          return {
+            id: r.id,
+            titulo: r.titulo,
+            nota: r.nota,
+            avaliacoes: r.avaliacoes,
+            autor: r.autor,
+            tempo_preparo: r.tempo_preparo,
+            link: r.link,
+            imagem: r.imagem,
+            data_favoritado: f.data_favoritado
+          };
+        })
+        .filter(Boolean);
+    }
 
     return jsonResponse(res, {
       sucesso: true,
       pagina: pagina,
       total: total,
-      mostrando: favoritos.length,
+      mostrando: receitas.length,
       tem_mais: (offset + 10) < total,
-      receitas: favoritos
+      receitas: receitas
     });
   } catch (error) {
     console.error('Erro ao buscar favoritos:', error);
@@ -349,7 +418,7 @@ router.get('/receitas/minhas', tokenRequired, async (req, res) => {
     const pagina = Math.max(1, parseInt(req.query.pagina) || 1);
     const offset = (pagina - 1) * 10;
 
-    const db = await getDb();
+    const db = await getUsersDb();
 
     // Conta total de receitas
     const totalResult = await getQuery(
@@ -420,7 +489,7 @@ router.post('/receitas', tokenRequired, async (req, res) => {
       return jsonResponse(res, { erro: 'Adicione pelo menos 1 passo no modo de preparo' }, 400);
     }
 
-    const db = await getDb();
+    const db = await getUsersDb();
 
     // Converte arrays para strings
     const ingredientesStr = ingredientes.join('\n');
@@ -459,7 +528,7 @@ router.get('/receitas/minhas/:id', tokenRequired, async (req, res) => {
   try {
     const userId = req.userId;
     const receitaId = parseInt(req.params.id);
-    const db = await getDb();
+    const db = await getUsersDb();
 
     const receita = await getQuery(
       db,
@@ -486,75 +555,6 @@ router.get('/receitas/minhas/:id', tokenRequired, async (req, res) => {
   } catch (error) {
     console.error('Erro ao buscar receita:', error);
     return jsonResponse(res, { erro: 'Erro ao buscar receita' }, 500);
-  }
-});
-
-/**
- * GET /receitas/surpresa
- * Sorteia uma receita aleatória do banco de dados
- */
-router.get('/receitas/surpresa', async (req, res) => {
-  try {
-    const db = await getDb();
-
-    // Conta total de receitas
-    const totalResult = await getQuery(
-      db,
-      'SELECT COUNT(*) as total FROM recipes'
-    );
-
-    const total = totalResult.total || 0;
-
-    if (total === 0) {
-      db.close();
-      return jsonResponse(res, { erro: 'Nenhuma receita disponível' }, 404);
-    }
-
-    // Sorteia uma receita aleatória
-    const receita = await getQuery(
-      db,
-      `SELECT id, titulo, nota, avaliacoes, autor, 
-              tempo_preparo, link, imagem, descricao, informacoes_adicionais
-       FROM recipes
-       ORDER BY RANDOM()
-       LIMIT 1`
-    );
-
-    if (!receita) {
-      db.close();
-      return jsonResponse(res, { erro: 'Erro ao sortear receita' }, 500);
-    }
-
-    const recipeId = receita.id;
-
-    // Busca os ingredientes
-    const ingredientes = await allQuery(
-      db,
-      'SELECT item FROM ingredients WHERE recipe_id = ? ORDER BY id',
-      [recipeId]
-    );
-
-    receita.ingredientes = ingredientes.map(row => row.item);
-
-    // Busca os passos do modo de preparo
-    const modoPreparo = await allQuery(
-      db,
-      'SELECT text FROM recipe_steps WHERE recipe_id = ? ORDER BY position',
-      [recipeId]
-    );
-
-    receita.modo_preparo = modoPreparo.map(row => row.text);
-
-    db.close();
-
-    return jsonResponse(res, {
-      sucesso: true,
-      mensagem: 'Receita surpresa! 🎉',
-      receita: receita
-    });
-  } catch (error) {
-    console.error('Erro ao sortear receita:', error);
-    return jsonResponse(res, { erro: 'Erro ao sortear receita' }, 500);
   }
 });
 

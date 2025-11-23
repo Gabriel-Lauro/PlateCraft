@@ -12,6 +12,7 @@ yarn-error.log
 *.db
 *.sqlite
 *.sqlite3
+!recipes.db
 
 # IDE
 .vscode/

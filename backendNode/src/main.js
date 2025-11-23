@@ -58,7 +58,7 @@ const PORT = parseInt(process.env.PORT || 5000);
 
 async function startServer() {
   try {
-    // Inicializa o banco de dados
+    // Inicializa o banco de dados de usuários
     await initDb();
 
     app.listen(PORT, HOST, () => {

@@ -1,7 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { getDb, runQuery, getQuery } = require('../database/dbSetup');
+const { getUsersDb, runQuery, getQuery } = require('../database/dbSetup');
 const { jsonResponse } = require('../utils/responses');
 const { tokenRequired, getSecretKey } = require('../middleware/authMiddleware');
 require('dotenv').config();
@@ -44,7 +44,7 @@ router.post('/registro', async (req, res) => {
       return jsonResponse(res, { erro: 'Senha deve ter pelo menos 6 caracteres' }, 400);
     }
 
-    const db = await getDb();
+    const db = await getUsersDb();
 
     // Verifica se o email já existe
     const existingUser = await getQuery(db, 'SELECT id FROM users WHERE email = ?', [email]);
@@ -117,7 +117,7 @@ router.post('/login', async (req, res) => {
       return jsonResponse(res, { erro: 'Email e senha são obrigatórios' }, 400);
     }
 
-    const db = await getDb();
+    const db = await getUsersDb();
 
     const user = await getQuery(
       db,
@@ -173,7 +173,7 @@ router.post('/login', async (req, res) => {
 router.get('/perfil', tokenRequired, async (req, res) => {
   try {
     const userId = req.userId;
-    const db = await getDb();
+    const db = await getUsersDb();
 
     const user = await getQuery(
       db,
