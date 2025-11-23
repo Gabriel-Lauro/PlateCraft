@@ -45,7 +45,10 @@ jobs:
 
       - name: Build APK with EAS
         working-directory: ./app
-        run: eas build --platform android --profile preview --wait --non-interactive
+        run: |
+          eas build --platform android --profile development --wait --non-interactive
+          mkdir -p ./build
+          eas build:download --latest --path ./build/app.apk
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
 
@@ -53,7 +56,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: platecraft-apk
-          path: app/build/
+          path: app/build/app.apk
           retention-days: 30
 
       - name: Create Release
