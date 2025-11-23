@@ -37,6 +37,17 @@ jobs:
       - name: Setup EAS CLI
         run: npm install -g eas-cli
 
+      - name: Verify EXPO_TOKEN
+        run: |
+          if [ -z "$EXPO_TOKEN" ]; then
+            echo "❌ EXPO_TOKEN não está configurado!"
+            exit 1
+          else
+            echo "✅ EXPO_TOKEN está configurado"
+          fi
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+
       - name: Build APK with EAS
         working-directory: ./app
         run: eas build --platform android --profile preview --wait --non-interactive
